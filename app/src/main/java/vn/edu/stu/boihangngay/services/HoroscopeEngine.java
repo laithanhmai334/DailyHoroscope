@@ -1,104 +1,188 @@
 package vn.edu.stu.boihangngay.services;
 
 import vn.edu.stu.boihangngay.model.EphemerisDay;
+import vn.edu.stu.boihangngay.model.NatalChart;
 
 import java.util.Arrays;
 import java.util.List;
-import vn.edu.stu.boihangngay.util.LuckyColorUtil;
+
 public class HoroscopeEngine {
+    public enum Aspect {
+        CONJUNCTION, // Trùng
+        SEXTILE,     // Lục hợp (cách 2 cung)
+        SQUARE,      // Vuông (cách 3 cung)
+        TRINE,       // Tam hợp (cách 4 cung)
+        OPPOSITION,  // Đối đỉnh (cách 6 cung)
+        NONE
+    }
+    private static final List<String> ZODIAC_ORDER = Arrays.asList(
+            "Aries", "Taurus", "Gemini", "Cancer",
+            "Leo", "Virgo", "Libra", "Scorpio",
+            "Sagittarius", "Capricorn", "Aquarius", "Pisces"
+    );
+    private static Aspect getAspect(String natal, String transit) {
+        int i1 = ZODIAC_ORDER.indexOf(natal);
+        int i2 = ZODIAC_ORDER.indexOf(transit);
+
+        if (i1 == -1 || i2 == -1) return Aspect.NONE;
+
+        int diff = Math.abs(i1 - i2);
+        diff = Math.min(diff, 12 - diff);
+
+        switch (diff) {
+            case 0: return Aspect.CONJUNCTION;
+            case 2: return Aspect.SEXTILE;
+            case 3: return Aspect.SQUARE;
+            case 4: return Aspect.TRINE;
+            case 6: return Aspect.OPPOSITION;
+            default: return Aspect.NONE;
+        }
+    }
+    private static String aspectMeaning(
+            String planet,
+            Aspect aspect,
+            String good,
+            String bad
+    ) {
+        switch (aspect) {
+            case CONJUNCTION:
+                return "• " + planet + " trùng góc: tác động rất mạnh, dễ bị kích hoạt rõ rệt.\n";
+
+            case SEXTILE:
+                return "• " + planet + " lục hợp: " + good + "\n";
+
+            case TRINE:
+                return "• " + planet + " tam hợp: " + good + "\n";
+
+            case SQUARE:
+                return "• " + planet + " vuông góc: " + bad + "\n";
+
+            case OPPOSITION:
+                return "• " + planet + " đối đỉnh: mâu thuẫn nội tâm, cần cân bằng.\n";
+
+            default:
+                return "• " + planet + ": ảnh hưởng nhẹ hoặc trung tính.\n";
+        }
+    }
+    private static String handleSun(String natalSun, EphemerisDay astro) {
+        Aspect a = getAspect(natalSun, astro.sun);
+
+        return aspectMeaning(
+                "Sun",
+                a,
+                "bạn tự tin hơn, dễ thể hiện bản thân",
+                "dễ mệt mỏi, nghi ngờ chính mình"
+        );
+    }
+    private static String handleMoon(String natalMoon, EphemerisDay astro) {
+        Aspect a = getAspect(natalMoon, astro.moon);
+
+        return aspectMeaning(
+                "Moon",
+                a,
+                "cảm xúc ổn định, dễ chịu",
+                "dễ căng thẳng, nhạy cảm, mood thất thường"
+        );
+    }
 
     // ====== NHÓM CUNG ======
-    private static final List<String> FIRE = Arrays.asList("Aries", "Leo", "Sagittarius");
-    private static final List<String> EARTH = Arrays.asList("Taurus", "Virgo", "Capricorn");
-    private static final List<String> AIR = Arrays.asList("Gemini", "Libra", "Aquarius");
-    private static final List<String> WATER = Arrays.asList("Cancer", "Scorpio", "Pisces");
 
-    public static String generate(String userZodiac, EphemerisDay astro) {
-        StringBuilder result = new StringBuilder();
+    public static String generate(NatalChart natal, EphemerisDay astro) {
+        StringBuilder sb = new StringBuilder();
 
-        result.append(" Cung của bạn: ").append(userZodiac).append("\n\n");
+        sb.append("🔮 Dự đoán hôm nay\n\n");
 
-        // 1. Mercury – tư duy & giao tiếp
-        result.append(handleMercury(astro));
+        sb.append(handleSun(natal.sun, astro));
+        sb.append(handleMoon(natal.moon, astro));
+        sb.append(handleMercury(natal.mercury, astro));
+        sb.append(handleVenus(natal.venus, astro));
+        sb.append(handleMars(natal.mars, astro));
+        sb.append(handleJupiter(natal.jupiter, astro));
+        sb.append(handleSaturn(natal.saturn, astro));
 
-        // 2. Moon – cảm xúc
-        result.append(handleMoon(userZodiac, astro));
-
-        // 3. Venus – tình cảm
-        result.append(handleVenus(userZodiac, astro));
-
-        // 4. Mars – hành động
-        result.append(handleMars(userZodiac, astro));
-        String luckyColor =
-                LuckyColorUtil.getLuckyColor(userZodiac, astro.moon);
-
-        result.append("\nMàu sắc may mắn hôm nay: ")
-                .append(luckyColor);
-        return result.toString();
+        return sb.toString();
     }
 
-    // ====== MERCURY ======
-    private static String handleMercury(EphemerisDay astro) {
-        if (astro.mercury_retrograde) {
-            return "• Mercury nghịch hành: hôm nay bạn nên cẩn trọng khi giao tiếp, ký kết hoặc đưa ra quyết định quan trọng.\n";
-        }
-        return "• Giao tiếp hôm nay khá suôn sẻ, dễ trao đổi và học hỏi.\n";
-    }
+
 
     // ====== MOON ======
-    private static String handleMoon(String userZodiac, EphemerisDay astro) {
-        if (WATER.contains(astro.moon)) {
-            return "• Moon ở cung Nước: cảm xúc của bạn trở nên nhạy cảm hơn, dễ bị tác động bởi môi trường xung quanh.\n";
-        }
-
-        if (FIRE.contains(astro.moon)) {
-            return "• Moon ở cung Lửa: tâm trạng sôi nổi, dễ có động lực để bắt đầu việc mới.\n";
-        }
-
-        if (EARTH.contains(astro.moon)) {
-            return "• Moon ở cung Đất: bạn có xu hướng thực tế, muốn ổn định và kiểm soát mọi thứ.\n";
-        }
-
-        return "• Moon ở cung Khí: tâm trí hoạt động nhiều, dễ suy nghĩ và trao đổi ý tưởng.\n";
-    }
 
     // ====== VENUS ======
-    private static String handleVenus(String userZodiac, EphemerisDay astro) {
+    private static String handleMercury(String natalMercury, EphemerisDay astro) {
+        Aspect a = getAspect(natalMercury, astro.mercury);
 
-        if (astro.venus.equals(userZodiac)) {
-            return "• Venus chiếu mạnh vào cung của bạn: tình cảm và các mối quan hệ cá nhân có dấu hiệu tích cực.\n";
+        String base;
+
+        switch (a) {
+            case CONJUNCTION:
+                base = "• Mercury trùng góc: đầu óc hoạt động mạnh, suy nghĩ liên tục.\n";
+                break;
+            case SEXTILE:
+                base = "• Mercury lục hợp: tư duy linh hoạt, giao tiếp trôi chảy.\n";
+                break;
+            case TRINE:
+                base = "• Mercury tam hợp: đầu óc minh mẫn, học nhanh, nói chuyện dễ hiểu.\n";
+                break;
+            case SQUARE:
+                base = "• Mercury vuông góc: dễ rối suy nghĩ, hiểu lầm khi giao tiếp.\n";
+                break;
+            case OPPOSITION:
+                base = "• Mercury đối đỉnh: mâu thuẫn giữa lý trí và ý kiến người khác.\n";
+                break;
+            default:
+                base = "• Mercury: tư duy hôm nay ở mức trung bình.\n";
         }
 
-        if (sameElement(userZodiac, astro.venus)) {
-            return "• Venus ở cung cùng nguyên tố: dễ có sự đồng cảm và hòa hợp trong tình cảm.\n";
+        // 🔁 chồng hiệu ứng retrograde
+        if (astro.mercury_retrograde) {
+            base += "  ⚠ Mercury nghịch hành: nên kiểm tra kỹ thông tin, tránh vội kết luận.\n";
         }
 
-        return "• Tình cảm hôm nay ở mức ổn định, nên tránh kỳ vọng quá cao.\n";
+        return base;
     }
 
-    // ====== MARS ======
-    private static String handleMars(String userZodiac, EphemerisDay astro) {
+    private static String handleVenus(String natalVenus, EphemerisDay astro) {
+        Aspect a = getAspect(natalVenus, astro.venus);
 
-        if (astro.mars.equals(userZodiac)) {
-            return "• Mars kích hoạt cung của bạn: năng lượng dồi dào, phù hợp để hành động và giải quyết việc tồn đọng.\n";
-        }
+        return aspectMeaning(
+                "Venus",
+                a,
+                "dễ hòa hợp, tình cảm tích cực",
+                "dễ thất vọng, kỳ vọng lệch"
+        );
+    }
+    private static String handleMars(String natalMars, EphemerisDay astro) {
+        Aspect a = getAspect(natalMars, astro.mars);
 
-        if (FIRE.contains(astro.mars)) {
-            return "• Mars ở cung Lửa: dễ hành động nhanh, cần tránh nóng vội.\n";
-        }
+        return aspectMeaning(
+                "Mars",
+                a,
+                "nhiều năng lượng, làm việc hiệu quả",
+                "dễ nóng nảy, hành động vội"
+        );
+    }
+    private static String handleJupiter(String natalJupiter, EphemerisDay astro) {
+        Aspect a = getAspect(natalJupiter, astro.jupiter);
 
-        if (EARTH.contains(astro.mars)) {
-            return "• Mars ở cung Đất: hành động chậm nhưng chắc, phù hợp làm việc dài hạn.\n";
-        }
+        return aspectMeaning(
+                "Jupiter",
+                a,
+                "dễ gặp cơ hội, tư duy tích cực",
+                "kỳ vọng quá cao, chủ quan"
+        );
+    }
+    private static String handleSaturn(String natalSaturn, EphemerisDay astro) {
+        Aspect a = getAspect(natalSaturn, astro.saturn);
 
-        return "• Năng lượng hôm nay ở mức vừa phải, nên cân bằng giữa hành động và nghỉ ngơi.\n";
+        return aspectMeaning(
+                "Saturn",
+                a,
+                "kỷ luật tốt, làm việc nghiêm túc",
+                "cảm giác áp lực, bị giới hạn"
+        );
     }
 
-    // ====== TIỆN ÍCH ======
-    private static boolean sameElement(String zodiac1, String zodiac2) {
-        return (FIRE.contains(zodiac1) && FIRE.contains(zodiac2)) ||
-                (EARTH.contains(zodiac1) && EARTH.contains(zodiac2)) ||
-                (AIR.contains(zodiac1) && AIR.contains(zodiac2)) ||
-                (WATER.contains(zodiac1) && WATER.contains(zodiac2));
-    }
+
+
+
 }

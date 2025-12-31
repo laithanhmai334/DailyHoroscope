@@ -1,13 +1,11 @@
 package vn.edu.stu.boihangngay.model;
 
-public class EphemerisDay {
+public class NatalChart {
     public String sun;
     public String moon;
     public String mercury;
-    public boolean mercury_retrograde;
     public String venus;
     public String mars;
-    public String jupiter;
     public String saturn;
+    public String jupiter;
 }
-

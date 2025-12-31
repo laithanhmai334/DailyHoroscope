@@ -19,6 +19,7 @@ import java.util.Calendar;
 import java.util.Map;
 
 import vn.edu.stu.boihangngay.model.EphemerisDay;
+import vn.edu.stu.boihangngay.model.NatalChart;
 import vn.edu.stu.boihangngay.services.EphemerisLoader;
 import vn.edu.stu.boihangngay.services.HoroscopeEngine;
 import vn.edu.stu.boihangngay.util.ZodiacUtil;
@@ -93,8 +94,26 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
 
-            String zodiac = ZodiacUtil.getZodiac(birthDay[0], birthMonth[0]);
+            String birthDate = birthYear[0] + "-"
+                    + String.format("%02d", birthMonth[0])
+                    + "-"
+                    + String.format("%02d", birthDay[0]);
+            EphemerisDay birthData = ephemerisMap.get(birthDate);
+            if (birthData == null) {
+                txtResult.setText("❌ Không có dữ liệu chiêm tinh cho ngày sinh");
+                return;
+            }
 
+            NatalChart natal = new NatalChart();
+// ☀ Sun: từ ZodiacUtil
+            natal.sun = ZodiacUtil.getZodiac(birthDay[0], birthMonth[0]);
+// 🌙 Moon + các hành tinh: từ ephemeris ngày sinh
+            natal.moon = birthData.moon;
+            natal.mercury = birthData.mercury;
+            natal.venus = birthData.venus;
+            natal.mars = birthData.mars;
+            natal.jupiter = birthData.jupiter;
+            natal.saturn = birthData.saturn;
             String today = java.time.LocalDate.now().toString();
             EphemerisDay todayData = ephemerisMap.get(today);
 
@@ -104,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             String horoscope =
-                    HoroscopeEngine.generate(zodiac, todayData);
+                    HoroscopeEngine.generate(natal, todayData);
 
             txtResult.setText(horoscope);
         });

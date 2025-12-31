@@ -15,7 +15,7 @@ import vn.edu.stu.boihangngay.model.EphemerisDay;
 public class EphemerisLoader {
     public static Map<String, EphemerisDay> load(Context context) {
         try {
-            InputStream is = context.getAssets().open("ephemeris_2025.json");
+            InputStream is = context.getAssets().open("ephemeris_1900_2100.json");
             InputStreamReader reader = new InputStreamReader(is);
 
             Type type = new TypeToken<Map<String, EphemerisDay>>() {}.getType();

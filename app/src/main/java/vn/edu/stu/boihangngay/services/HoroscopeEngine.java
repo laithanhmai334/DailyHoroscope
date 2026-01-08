@@ -1,6 +1,7 @@
 package vn.edu.stu.boihangngay.services;
 
 import vn.edu.stu.boihangngay.model.EphemerisDay;
+import vn.edu.stu.boihangngay.model.HoroscopeResult;
 import vn.edu.stu.boihangngay.model.NatalChart;
 
 import java.util.Arrays;
@@ -68,7 +69,7 @@ public class HoroscopeEngine {
         Aspect a = getAspect(natalSun, astro.sun);
 
         return aspectMeaning(
-                "Sun",
+                "Bản ngã",
                 a,
                 "bạn tự tin hơn, dễ thể hiện bản thân",
                 "dễ mệt mỏi, nghi ngờ chính mình"
@@ -78,7 +79,7 @@ public class HoroscopeEngine {
         Aspect a = getAspect(natalMoon, astro.moon);
 
         return aspectMeaning(
-                "Moon",
+                "Cảm xúc",
                 a,
                 "cảm xúc ổn định, dễ chịu",
                 "dễ căng thẳng, nhạy cảm, mood thất thường"
@@ -87,20 +88,32 @@ public class HoroscopeEngine {
 
     // ====== NHÓM CUNG ======
 
-    public static String generate(NatalChart natal, EphemerisDay astro) {
-        StringBuilder sb = new StringBuilder();
+    public static HoroscopeResult generate(NatalChart natal, EphemerisDay astro) {
 
-        sb.append("🔮 Dự đoán hôm nay\n\n");
+        HoroscopeResult r = new HoroscopeResult();
 
-        sb.append(handleSun(natal.sun, astro));
-        sb.append(handleMoon(natal.moon, astro));
-        sb.append(handleMercury(natal.mercury, astro));
-        sb.append(handleVenus(natal.venus, astro));
-        sb.append(handleMars(natal.mars, astro));
-        sb.append(handleJupiter(natal.jupiter, astro));
-        sb.append(handleSaturn(natal.saturn, astro));
+        // 🌞 Bản ngã
+        r.banNga = handleSun(natal.sun, astro);
 
-        return sb.toString();
+        // 🌙 Cảm xúc
+        r.camXuc = handleMoon(natal.moon, astro);
+
+        // ♀ Tình cảm
+        r.tinhCam = handleVenus(natal.venus, astro);
+
+        // ♂ Động lực
+        r.dongLuc = handleMars(natal.mars, astro);
+
+        // ☿ Học tập / tư duy
+        r.hocTap = handleMercury(natal.mercury, astro);
+
+        // ♃ May mắn
+        r.mayMan = handleJupiter(natal.jupiter, astro);
+
+        // ♄ Kỷ luật
+        r.kyLuat = handleSaturn(natal.saturn, astro);
+
+        return r;
     }
 
 
@@ -115,27 +128,27 @@ public class HoroscopeEngine {
 
         switch (a) {
             case CONJUNCTION:
-                base = "• Mercury trùng góc: đầu óc hoạt động mạnh, suy nghĩ liên tục.\n";
+                base = "• Đầu óc hoạt động mạnh, suy nghĩ liên tục.\n";
                 break;
             case SEXTILE:
-                base = "• Mercury lục hợp: tư duy linh hoạt, giao tiếp trôi chảy.\n";
+                base = "• Tư duy linh hoạt, giao tiếp trôi chảy.\n";
                 break;
             case TRINE:
-                base = "• Mercury tam hợp: đầu óc minh mẫn, học nhanh, nói chuyện dễ hiểu.\n";
+                base = "• Đầu óc minh mẫn, học nhanh, nói chuyện dễ hiểu.\n";
                 break;
             case SQUARE:
-                base = "• Mercury vuông góc: dễ rối suy nghĩ, hiểu lầm khi giao tiếp.\n";
+                base = "• Dễ rối suy nghĩ, hiểu lầm khi giao tiếp.\n";
                 break;
             case OPPOSITION:
-                base = "• Mercury đối đỉnh: mâu thuẫn giữa lý trí và ý kiến người khác.\n";
+                base = "• Mâu thuẫn giữa lý trí và ý kiến người khác.\n";
                 break;
             default:
-                base = "• Mercury: tư duy hôm nay ở mức trung bình.\n";
+                base = "• Tư duy hôm nay ở mức trung bình.\n";
         }
 
         // 🔁 chồng hiệu ứng retrograde
         if (astro.mercury_retrograde) {
-            base += "  ⚠ Mercury nghịch hành: nên kiểm tra kỹ thông tin, tránh vội kết luận.\n";
+            base += "  ⚠ Nên kiểm tra kỹ thông tin, tránh vội kết luận.\n";
         }
 
         return base;
@@ -155,7 +168,7 @@ public class HoroscopeEngine {
         Aspect a = getAspect(natalMars, astro.mars);
 
         return aspectMeaning(
-                "Mars",
+                "Động lực",
                 a,
                 "nhiều năng lượng, làm việc hiệu quả",
                 "dễ nóng nảy, hành động vội"
@@ -165,7 +178,7 @@ public class HoroscopeEngine {
         Aspect a = getAspect(natalJupiter, astro.jupiter);
 
         return aspectMeaning(
-                "Jupiter",
+                "May mắn",
                 a,
                 "dễ gặp cơ hội, tư duy tích cực",
                 "kỳ vọng quá cao, chủ quan"
@@ -175,7 +188,7 @@ public class HoroscopeEngine {
         Aspect a = getAspect(natalSaturn, astro.saturn);
 
         return aspectMeaning(
-                "Saturn",
+                "Kỷ luật",
                 a,
                 "kỷ luật tốt, làm việc nghiêm túc",
                 "cảm giác áp lực, bị giới hạn"
